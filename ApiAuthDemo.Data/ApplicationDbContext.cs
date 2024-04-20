@@ -10,6 +10,7 @@ namespace ApiAuthDemo.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
 	public string UserName { get; set; } = "system";
+	public string? TimeZoneId { get; set; }
 
 	public DbSet<Widget> Widgets { get; set; }
 
@@ -27,22 +28,29 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
 	private void AuditEntities()
 	{
-		// note that in a more polished app, I would have time zone support at the user level
-
 		foreach (var entity in ChangeTracker.Entries<BaseEntity>())
 		{
 			switch (entity.State)
 			{
 				case EntityState.Added:
 					entity.Entity.CreatedBy = UserName;
-					entity.Entity.DateCreated = DateTime.UtcNow;
+					entity.Entity.DateCreated = LocalDateTime(TimeZoneId);
 					break;
 				case EntityState.Modified:
 					entity.Entity.ModifiedBy = UserName;
-					entity.Entity.DateModified = DateTime.UtcNow;
+					entity.Entity.DateModified = LocalDateTime(TimeZoneId);
 					break;
 			}
 		}
+	}
+
+	private static DateTime LocalDateTime(string? timeZoneId)
+	{
+		var now = DateTime.UtcNow;
+		if (timeZoneId == null) return now;
+
+		var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+		return TimeZoneInfo.ConvertTimeFromUtc(now, timeZone);
 	}
 }
 

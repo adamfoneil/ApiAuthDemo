@@ -2,6 +2,7 @@
 using ApiAuthDemo.Data.Entities;
 using ApiAuthDemo.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ApiAuthDemo;
 
@@ -13,13 +14,16 @@ internal static partial class Program
 
 		group.MapGet("/Queries/MyWidgets", async (ApplicationDbContext db, HttpRequest request) =>
 		{
-			var userName = GetUserName(request);
+			var (userName, _) = GetUserInfo(request);
+			db.UserName = userName;
 			return await db.Widgets.Where(row => row.CreatedBy == userName).ToListAsync();
 		});
 
 		group.MapPost("/Widgets", async (ApplicationDbContext db, HttpRequest request, Widget data) =>
 		{
-			db.UserName = GetUserName(request);
+			var (userName, timeZoneId) = GetUserInfo(request);
+			db.UserName = userName;
+			db.TimeZoneId = timeZoneId;
 			db.Widgets.Save(data);
 			await db.SaveChangesAsync();
 			return Results.Ok(data);
@@ -27,15 +31,16 @@ internal static partial class Program
 
 		group.MapDelete("/Widgets/{id}", async (ApplicationDbContext db, HttpRequest request, int id) =>
 		{
-			var userName = GetUserName(request);
+			var (userName, _) = GetUserInfo(request);
 			await db.Widgets.Where(row => row.Id == id && row.CreatedBy == userName).ExecuteDeleteAsync();
 			return Results.Ok();
 		});
 	}
 
-	private static string GetUserName(HttpRequest request)
+	private static (string UserName, string? TimeZoneId) GetUserInfo(HttpRequest request)
 	{
 		var user = request.HttpContext.User;
-		return user.Identity?.Name ?? "<anon>";
+		var timeZoneId = user.FindFirstValue(nameof(ApplicationUser.TimeZoneId));
+		return (user.Identity?.Name ?? "<anon>", timeZoneId);
 	}
 }
