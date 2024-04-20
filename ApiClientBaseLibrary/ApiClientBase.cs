@@ -46,7 +46,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 		}
 		catch (Exception exc)
 		{
-			Logger.LogError(exc, "Error in {Method}", nameof(GetAsync));
+			Logger.LogError(exc, "Error in {Method}", nameof(PostWithResultAsync));
 			if (!await HandleException(response, exc))
 			{
 				throw;
@@ -66,7 +66,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 		}
 		catch (Exception exc)
 		{
-			Logger.LogError(exc, "Error in {Method}", nameof(GetAsync));
+			Logger.LogError(exc, "Error in {Method}", nameof(PostWithInputAsync));
 			if (!await HandleException(response, exc))
 			{
 				throw;
@@ -85,7 +85,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 		}
 		catch (Exception exc)
 		{
-			Logger.LogError(exc, "Error in {Method}", nameof(GetAsync));
+			Logger.LogError(exc, "Error in {Method}", nameof(PostWithInputAndResultAsync));
 			if (!await HandleException(response, exc))
 			{
 				throw;
@@ -105,7 +105,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 		}
 		catch (Exception exc)
 		{
-			Logger.LogError(exc, "Error in {Method}", nameof(GetAsync));
+			Logger.LogError(exc, "Error in {Method}", nameof(DeleteAsync));
 			if (!await HandleException(response, exc))
 			{
 				throw;
