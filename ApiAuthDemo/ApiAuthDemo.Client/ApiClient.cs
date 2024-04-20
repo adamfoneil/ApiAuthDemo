@@ -17,4 +17,9 @@ public class ApiClient(IHttpClientFactory factory, ILogger<ApiClient> logger) : 
         // assume error is handled
         return await Task.FromResult(true);
     }
+
+    public async Task DeleteWidgetAsync(int id) => await DeleteAsync($"api/Widgets/{id}");
+    
+    public async Task<Widget> SaveWidgetAsync(Widget data) => await PostWithInputAndResultAsync("api/Widgets", data) ?? throw new Exception("widget not saved");
+    
 }

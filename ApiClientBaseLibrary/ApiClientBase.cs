@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics.Tracing;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
@@ -72,5 +73,44 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 				throw;
 			}
 		}		
+	}
+
+	protected async Task<TResult?> PostWithInputAndResultAsync<TResult>(string uri, TResult input)
+	{
+		var response = await Client.PostAsJsonAsync(uri, input);
+
+		try
+		{
+			response.EnsureSuccessStatusCode();
+			return await response.Content.ReadFromJsonAsync<TResult>();
+		}
+		catch (Exception exc)
+		{
+			Logger.LogError(exc, "Error in {Method}", nameof(GetAsync));
+			if (!await HandleException(response, exc))
+			{
+				throw;
+			}
+		}
+
+		return default;
+	}
+
+	protected async Task DeleteAsync(string uri)
+	{
+		var response = await Client.DeleteAsync(uri);
+
+		try
+		{
+			response.EnsureSuccessStatusCode();
+		}
+		catch (Exception exc)
+		{
+			Logger.LogError(exc, "Error in {Method}", nameof(GetAsync));
+			if (!await HandleException(response, exc))
+			{
+				throw;
+			}
+		}
 	}
 }

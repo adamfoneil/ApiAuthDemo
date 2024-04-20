@@ -8,6 +8,7 @@ using ApiAuthDemo.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 builder.Services.AddSingleton<BaseUrlProvider>();
+
+builder.Services.AddRadzenComponents();
 
 builder.Services
 	.AddTransient<CookieHandler>()
@@ -79,6 +82,6 @@ app.MapRazorComponents<App>()
 app.MapAdditionalIdentityEndpoints();
 
 // app-specific stuff
-app.MapQueries();
+app.MapApiEndpoints();
 
 app.Run();

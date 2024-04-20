@@ -3,20 +3,54 @@
 @inject ApiClient Api
 @attribute [Authorize]
 
+<RadzenComponents />
+
 <h3>My Widgets</h3>
 
-<ul>
-	@foreach (var w in Widgets)
-	{
-		<li>@w.Name</li>
-	}
-</ul>
+@if (gridHelper is null) return;
+
+<GridInsertButton Grid="grid" OnCreateItem="() => new Widget()"/>
+
+<RadzenGrid TItem="Widget" Data="gridHelper.Data" RowCreate="gridHelper.SaveRowAsync" RowUpdate="gridHelper.SaveRowAsync" @ref="grid">
+	<Columns>		
+		<RadzenGridColumn TItem="Widget" Property="Name" Title="Widget Name">
+			<EditTemplate>
+				<RadzenTextBox @bind-Value="context.Name" />
+			</EditTemplate>
+		</RadzenGridColumn>
+
+		<RadzenGridColumn TItem="Widget" Property="Description" Title="Description">
+			<EditTemplate>
+				<RadzenTextBox @bind-Value="context.Description" />
+			</EditTemplate>
+		</RadzenGridColumn>
+
+		<RadzenGridColumn TItem="Widget" Property="Price" Title="Price">
+			<EditTemplate>
+				<RadzenNumeric @bind-Value="context.Price" />
+			</EditTemplate>
+		</RadzenGridColumn>
+
+		<RadzenGridColumn TItem="Widget">
+			<Template>
+				Created: @context.DateCreated
+				<br/>
+				Modified: @context.DateModified
+			</Template>
+		</RadzenGridColumn>
+
+		<GridControls Grid="grid" DeletingRow="gridHelper.DeleteRowAsync" TItem="Widget" />
+	</Columns>
+</RadzenGrid>
+
 
 @code {
-	private IEnumerable<Widget> Widgets = [];
+	private RadzenGrid<Widget>? grid;
+	private GridHelper? gridHelper;
 
 	protected override async Task OnInitializedAsync()
 	{
-		Widgets = await Api.GetMyWidgetsAsync();
+		gridHelper = new(Dialog, Api);
+		await gridHelper.RefreshAsync();
 	}
 }
