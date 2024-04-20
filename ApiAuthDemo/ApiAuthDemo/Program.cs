@@ -1,3 +1,4 @@
+using ApiAuthDemo;
 using ApiAuthDemo.Components;
 using ApiAuthDemo.Components.Account;
 using ApiAuthDemo.Data;
@@ -40,7 +41,6 @@ builder.Services.MigrateDatabase<ApplicationDbContext>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
 	app.UseWebAssemblyDebugging();
@@ -48,8 +48,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-	app.UseExceptionHandler("/Error", createScopeForErrors: true);
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+	app.UseExceptionHandler("/Error", createScopeForErrors: true);	
 	app.UseHsts();
 }
 
@@ -64,5 +63,8 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+// app-specific stuff
+app.MapQueries();
 
 app.Run();

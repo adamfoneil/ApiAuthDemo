@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiAuthDemo.Client", "ApiAu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiClientBaseLibrary", "ApiClientBaseLibrary\ApiClientBaseLibrary.csproj", "{916893F8-3269-40D4-86F7-B496790FAF39}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiAuthDemo.Data", "ApiAuthDemo.Data\ApiAuthDemo.Data.csproj", "{039226A8-C74E-474C-956C-A6A290DFAADC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{916893F8-3269-40D4-86F7-B496790FAF39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{916893F8-3269-40D4-86F7-B496790FAF39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{916893F8-3269-40D4-86F7-B496790FAF39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{039226A8-C74E-474C-956C-A6A290DFAADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{039226A8-C74E-474C-956C-A6A290DFAADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{039226A8-C74E-474C-956C-A6A290DFAADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{039226A8-C74E-474C-956C-A6A290DFAADC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

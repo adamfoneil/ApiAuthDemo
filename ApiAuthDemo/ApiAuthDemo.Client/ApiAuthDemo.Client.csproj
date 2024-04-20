@@ -13,4 +13,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\ApiAuthDemo.Data\ApiAuthDemo.Data.csproj" />
+    <ProjectReference Include="..\..\ApiClientBaseLibrary\ApiClientBaseLibrary.csproj" />
+  </ItemGroup>
+
 </Project>
