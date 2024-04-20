@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Diagnostics.Tracing;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 
@@ -14,7 +13,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 
 	protected HttpClient Client { get; } = httpClient;
 
-	protected abstract Task<bool> HandleException(HttpResponseMessage? response, Exception exception, [CallerMemberName]string? methodName = null);
+	protected abstract Task<bool> HandleException(HttpResponseMessage? response, Exception exception, [CallerMemberName] string? methodName = null);
 
 	protected async Task<T?> GetAsync<T>(string uri)
 	{
@@ -33,7 +32,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 				throw;
 			}
 			return default;
-		}		
+		}
 	}
 
 	protected async Task<TResult?> PostWithResultAsync<TResult>(string uri)
@@ -72,7 +71,7 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 			{
 				throw;
 			}
-		}		
+		}
 	}
 
 	protected async Task<TResult?> PostWithInputAndResultAsync<TResult>(string uri, TResult input)

@@ -12,12 +12,12 @@ builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticat
 builder.Services.AddRadzenComponents();
 
 builder.Services
-    .AddTransient<CookieHandler>()
-    .AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(ApiClient.Name))
-    .AddHttpClient(ApiClient.Name, (sp, client) =>
-    {
-        client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-    }).AddHttpMessageHandler<CookieHandler>();
+	.AddTransient<CookieHandler>()
+	.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(ApiClient.Name))
+	.AddHttpClient(ApiClient.Name, (sp, client) =>
+	{
+		client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+	}).AddHttpMessageHandler<CookieHandler>();
 
 builder.Services.AddScoped<ApiClient>();
 
