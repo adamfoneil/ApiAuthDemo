@@ -1,8 +1,10 @@
 using ApiAuthDemo;
+using ApiAuthDemo.Client;
 using ApiAuthDemo.Components;
 using ApiAuthDemo.Components.Account;
 using ApiAuthDemo.Data;
 using ApiAuthDemo.Extensions;
+using ApiAuthDemo.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,18 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+builder.Services.AddSingleton<BaseUrlProvider>();
+
+builder.Services
+	.AddTransient<CookieHandler>()
+	.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(ApiClient.Name))
+	.AddHttpClient(ApiClient.Name, (sp, client) =>
+	{
+		var baseUrl = sp.GetRequiredService<BaseUrlProvider>().BaseUrl;
+		client.BaseAddress = new Uri(baseUrl);
+	}).AddHttpMessageHandler<CookieHandler>();
+
+builder.Services.AddScoped<ApiClient>();
 
 builder.Services.AddAuthentication(options =>
 	{

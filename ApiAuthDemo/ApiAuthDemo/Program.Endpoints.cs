@@ -13,7 +13,7 @@ internal static partial class Program
         {
             var user = request.HttpContext.User;
             var userName = user.Identity?.Name ?? "<anon>";
-            var widgets = await db.Widgets.Where(row => row.CreatedBy == userName).ToListAsync();
+            return await db.Widgets.Where(row => row.CreatedBy == userName).ToListAsync();            
         });
     }
 }

@@ -1,9 +1,22 @@
 ﻿@page "/Widgets"
 @rendermode InteractiveWebAssembly
+@inject ApiClient Api
 @attribute [Authorize]
 
 <h3>My Widgets</h3>
 
-@code {
+<ul>
+	@foreach (var w in Widgets)
+	{
+		<li>@w.Name</li>
+	}
+</ul>
 
+@code {
+	private IEnumerable<Widget> Widgets = [];
+
+	protected override async Task OnInitializedAsync()
+	{
+		Widgets = await Api.GetMyWidgetsAsync();
+	}
 }

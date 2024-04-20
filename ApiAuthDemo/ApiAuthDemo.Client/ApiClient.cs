@@ -4,9 +4,11 @@ using System.Runtime.CompilerServices;
 
 namespace ApiAuthDemo.Client;
 
-public class ApiClient(HttpClient httpClient, ILogger<ApiClient> logger) : ApiClientBase(httpClient, logger)
+public class ApiClient(IHttpClientFactory factory, ILogger<ApiClient> logger) : ApiClientBase(factory.CreateClient(Name), logger)
 {
-    public async Task<IEnumerable<Widget>> GetMyWidgetsAsync() => await GetAsync<IEnumerable<Widget>>("MyWidgets") ?? [];
+    public const string Name = "API";
+
+    public async Task<IEnumerable<Widget>> GetMyWidgetsAsync() => await GetAsync<IEnumerable<Widget>>("api/Queries/MyWidgets") ?? [];
 
     protected override async Task<bool> HandleException(HttpResponseMessage? response, Exception exception, [CallerMemberName] string? methodName = null)
     {
