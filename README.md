@@ -8,4 +8,4 @@ This all comes together in [Widgets/Page.razor](https://github.com/adamfoneil/Ap
 
 Note, this project contains all the regular Blazor template stuff, which I am too impatient to remove.
 
-![image](https://github.com/adamfoneil/ApiAuthDemo/assets/4549398/08744dd3-a25f-461c-9b85-53615cf3a68f)
+![image](widget-crud.gif)
