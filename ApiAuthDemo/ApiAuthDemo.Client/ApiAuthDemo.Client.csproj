@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+	<RestoreAdditionalProjectSources>
+		https://aosoftware.blob.core.windows.net/packages/index.json
+	</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>

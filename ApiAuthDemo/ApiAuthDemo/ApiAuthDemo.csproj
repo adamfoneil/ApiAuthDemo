@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-ApiAuthDemo-3b5cca64-99ac-4e87-a9a7-5bf95dfa7d20</UserSecretsId>
+	<RestoreAdditionalProjectSources>
+		https://aosoftware.blob.core.windows.net/packages/index.json
+	</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
