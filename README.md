@@ -9,3 +9,12 @@ This all comes together in [Widgets/Page.razor](https://github.com/adamfoneil/Ap
 Note, this project contains all the regular Blazor template stuff, which I am too impatient to remove.
 
 ![image](widget-crud.gif)
+
+# Time Zone Support
+My eventual use case for this in production is in a multi-tenant app where auditing and permissions depend on knowing custom properties of the user, in this case [ApplicationUser](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationUser.cs). One way to demo a similar feature (without adding true multi-tenant support to this app), was to add time zone support to the [auditing features](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationDbContext.cs#L29).
+
+I've accomplished this by:
+- adding a `TimeZoneId` property to `ApplicationUser`
+- adding a custom claims factory [DbClaimsPrincipalFactory](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo/ApiAuthDemo/Services/DbClaimsPrincipalFactory.cs) and added it to the DI container in [Program.cs](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo/ApiAuthDemo/Program.cs#L25).
+- adding a `TimeZoneId` property to my db context [ApplicationDbContext](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationDbContext.cs#L13). This is set within the endpoint handler [here](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo/ApiAuthDemo/Program.Endpoints.cs#L26). The user's time zone is read when parsing [user info](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo/ApiAuthDemo/Program.Endpoints.cs#L43) from incoming requests.
+- 
