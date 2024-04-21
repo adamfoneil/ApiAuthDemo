@@ -47,7 +47,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 	private static DateTime LocalDateTime(string? timeZoneId)
 	{
 		var now = DateTime.UtcNow;
-		if (timeZoneId == null) return now;
+		if (string.IsNullOrWhiteSpace(timeZoneId)) return now;
 
 		var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 		return TimeZoneInfo.ConvertTimeFromUtc(now, timeZone);
