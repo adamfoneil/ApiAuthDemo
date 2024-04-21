@@ -16,7 +16,7 @@ internal static partial class Program
 		{
 			var (userName, _) = GetUserInfo(request);
 			db.UserName = userName;
-			return await db.Widgets.Where(row => row.CreatedBy == userName).ToListAsync();
+			return await db.Widgets.Where(row => row.CreatedBy == userName).OrderBy(row => row.Name).ToListAsync();
 		});
 
 		group.MapPost("/Widgets", async (ApplicationDbContext db, HttpRequest request, Widget data) =>
