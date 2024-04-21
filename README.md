@@ -11,7 +11,7 @@ Note, this project contains all the regular Blazor template stuff, which I am to
 ![image](widget-crud.gif)
 
 # Time Zone Support
-My eventual use case for this in production is in a multi-tenant app where auditing and permissions depend on knowing custom properties of the user, in this case [ApplicationUser](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationUser.cs). One way to demo a similar feature (without adding true multi-tenant support to this app), was to add time zone support to the [auditing features](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationDbContext.cs#L29).
+My eventual use case for this in production is in a multi-tenant app where auditing and permissions depend on knowing custom properties of the user, in this case [ApplicationUser](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationUser.cs). One way to demo custom user properties (without adding true multi-tenant support to this app), was to add time zone support to the [auditing features](https://github.com/adamfoneil/ApiAuthDemo/blob/master/ApiAuthDemo.Data/ApplicationDbContext.cs#L29).
 
 I've accomplished this by:
 - adding a `TimeZoneId` property to `ApplicationUser`
