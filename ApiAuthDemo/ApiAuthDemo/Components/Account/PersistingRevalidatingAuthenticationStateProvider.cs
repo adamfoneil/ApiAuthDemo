@@ -16,9 +16,10 @@ namespace ApiAuthDemo.Components.Account
 	// authentication state to the client which is then fixed for the lifetime of the WebAssembly application.
 	internal sealed class PersistingRevalidatingAuthenticationStateProvider : RevalidatingServerAuthenticationStateProvider
 	{
-		private readonly IServiceScopeFactory scopeFactory;
-		private readonly PersistentComponentState state;
-		private readonly IdentityOptions options;
+		private readonly IServiceScopeFactory _scopeFactory;
+		private readonly PersistentComponentState _state;
+		private readonly IdentityOptions _options;
+		private readonly ILogger<PersistingRevalidatingAuthenticationStateProvider> _logger;
 
 		private readonly PersistingComponentStateSubscription subscription;
 
@@ -31,12 +32,13 @@ namespace ApiAuthDemo.Components.Account
 			IOptions<IdentityOptions> optionsAccessor)
 			: base(loggerFactory)
 		{
-			scopeFactory = serviceScopeFactory;
-			state = persistentComponentState;
-			options = optionsAccessor.Value;
+			_scopeFactory = serviceScopeFactory;
+			_state = persistentComponentState;
+			_options = optionsAccessor.Value;
+			_logger = loggerFactory.CreateLogger<PersistingRevalidatingAuthenticationStateProvider>();
 
 			AuthenticationStateChanged += OnAuthenticationStateChanged;
-			subscription = state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveWebAssembly);
+			subscription = _state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveWebAssembly);
 		}
 
 		protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);
@@ -45,7 +47,7 @@ namespace ApiAuthDemo.Components.Account
 			AuthenticationState authenticationState, CancellationToken cancellationToken)
 		{
 			// Get the user manager from a new scope to ensure it fetches fresh data
-			await using var scope = scopeFactory.CreateAsyncScope();
+			await using var scope = _scopeFactory.CreateAsyncScope();
 			var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 			return await ValidateSecurityStampAsync(userManager, authenticationState.User);
 		}
@@ -63,7 +65,7 @@ namespace ApiAuthDemo.Components.Account
 			}
 			else
 			{
-				var principalStamp = principal.FindFirstValue(options.ClaimsIdentity.SecurityStampClaimType);
+				var principalStamp = principal.FindFirstValue(_options.ClaimsIdentity.SecurityStampClaimType);
 				var userStamp = await userManager.GetSecurityStampAsync(user);
 				return principalStamp == userStamp;
 			}
@@ -86,12 +88,14 @@ namespace ApiAuthDemo.Components.Account
 
 			if (principal.Identity?.IsAuthenticated == true)
 			{
-				var userId = principal.FindFirst(options.ClaimsIdentity.UserIdClaimType)?.Value;
-				var email = principal.FindFirst(options.ClaimsIdentity.EmailClaimType)?.Value;
+                var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
+                var email = principal.FindFirst(_options.ClaimsIdentity.EmailClaimType)?.Value;
 
+                _logger.LogDebug("Persisting login for {user}", email);
+				
 				if (userId != null && email != null)
 				{
-					state.PersistAsJson(nameof(UserInfo), new UserInfo
+					_state.PersistAsJson(nameof(UserInfo), new UserInfo
 					{
 						UserId = userId,
 						Email = email,
