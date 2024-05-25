@@ -5,6 +5,8 @@ using Radzen;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+builder.Logging.SetMinimumLevel(LogLevel.Debug);
+
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();

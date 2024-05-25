@@ -9,106 +9,105 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Security.Claims;
 
-namespace ApiAuthDemo.Components.Account
+namespace ApiAuthDemo.Components.Account;
+
+// This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user
+// every 30 minutes an interactive circuit is connected. It also uses PersistentComponentState to flow the
+// authentication state to the client which is then fixed for the lifetime of the WebAssembly application.
+internal sealed class PersistingRevalidatingAuthenticationStateProvider : RevalidatingServerAuthenticationStateProvider
 {
-	// This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user
-	// every 30 minutes an interactive circuit is connected. It also uses PersistentComponentState to flow the
-	// authentication state to the client which is then fixed for the lifetime of the WebAssembly application.
-	internal sealed class PersistingRevalidatingAuthenticationStateProvider : RevalidatingServerAuthenticationStateProvider
+	private readonly IServiceScopeFactory _scopeFactory;
+	private readonly PersistentComponentState _state;
+	private readonly IdentityOptions _options;
+	private readonly ILogger<PersistingRevalidatingAuthenticationStateProvider> _logger;
+
+	private readonly PersistingComponentStateSubscription subscription;
+
+	private Task<AuthenticationState>? authenticationStateTask;
+
+	public PersistingRevalidatingAuthenticationStateProvider(
+		ILoggerFactory loggerFactory,
+		IServiceScopeFactory serviceScopeFactory,
+		PersistentComponentState persistentComponentState,
+		IOptions<IdentityOptions> optionsAccessor)
+		: base(loggerFactory)
 	{
-		private readonly IServiceScopeFactory _scopeFactory;
-		private readonly PersistentComponentState _state;
-		private readonly IdentityOptions _options;
-		private readonly ILogger<PersistingRevalidatingAuthenticationStateProvider> _logger;
+		_scopeFactory = serviceScopeFactory;
+		_state = persistentComponentState;
+		_options = optionsAccessor.Value;
+		_logger = loggerFactory.CreateLogger<PersistingRevalidatingAuthenticationStateProvider>();
 
-		private readonly PersistingComponentStateSubscription subscription;
+		AuthenticationStateChanged += OnAuthenticationStateChanged;
+		subscription = _state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveWebAssembly);
+	}
 
-		private Task<AuthenticationState>? authenticationStateTask;
+	protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);
 
-		public PersistingRevalidatingAuthenticationStateProvider(
-			ILoggerFactory loggerFactory,
-			IServiceScopeFactory serviceScopeFactory,
-			PersistentComponentState persistentComponentState,
-			IOptions<IdentityOptions> optionsAccessor)
-			: base(loggerFactory)
+	protected override async Task<bool> ValidateAuthenticationStateAsync(
+		AuthenticationState authenticationState, CancellationToken cancellationToken)
+	{
+		// Get the user manager from a new scope to ensure it fetches fresh data
+		await using var scope = _scopeFactory.CreateAsyncScope();
+		var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+		return await ValidateSecurityStampAsync(userManager, authenticationState.User);
+	}
+
+	private async Task<bool> ValidateSecurityStampAsync(UserManager<ApplicationUser> userManager, ClaimsPrincipal principal)
+	{
+		var user = await userManager.GetUserAsync(principal);
+		if (user is null)
 		{
-			_scopeFactory = serviceScopeFactory;
-			_state = persistentComponentState;
-			_options = optionsAccessor.Value;
-			_logger = loggerFactory.CreateLogger<PersistingRevalidatingAuthenticationStateProvider>();
+			return false;
+		}
+		else if (!userManager.SupportsUserSecurityStamp)
+		{
+			return true;
+		}
+		else
+		{
+			var principalStamp = principal.FindFirstValue(_options.ClaimsIdentity.SecurityStampClaimType);
+			var userStamp = await userManager.GetSecurityStampAsync(user);
+			return principalStamp == userStamp;
+		}
+	}
 
-			AuthenticationStateChanged += OnAuthenticationStateChanged;
-			subscription = _state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveWebAssembly);
+	private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+	{
+		authenticationStateTask = task;
+	}
+
+	private async Task OnPersistingAsync()
+	{
+		if (authenticationStateTask is null)
+		{
+			throw new UnreachableException($"Authentication state not set in {nameof(OnPersistingAsync)}().");
 		}
 
-		protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);
+		var authenticationState = await authenticationStateTask;
+		var principal = authenticationState.User;
 
-		protected override async Task<bool> ValidateAuthenticationStateAsync(
-			AuthenticationState authenticationState, CancellationToken cancellationToken)
+		if (principal.Identity?.IsAuthenticated == true)
 		{
-			// Get the user manager from a new scope to ensure it fetches fresh data
-			await using var scope = _scopeFactory.CreateAsyncScope();
-			var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-			return await ValidateSecurityStampAsync(userManager, authenticationState.User);
-		}
+			var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
+			var email = principal.FindFirst(_options.ClaimsIdentity.EmailClaimType)?.Value;
 
-		private async Task<bool> ValidateSecurityStampAsync(UserManager<ApplicationUser> userManager, ClaimsPrincipal principal)
-		{
-			var user = await userManager.GetUserAsync(principal);
-			if (user is null)
-			{
-				return false;
-			}
-			else if (!userManager.SupportsUserSecurityStamp)
-			{
-				return true;
-			}
-			else
-			{
-				var principalStamp = principal.FindFirstValue(_options.ClaimsIdentity.SecurityStampClaimType);
-				var userStamp = await userManager.GetSecurityStampAsync(user);
-				return principalStamp == userStamp;
-			}
-		}
-
-		private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
-		{
-			authenticationStateTask = task;
-		}
-
-		private async Task OnPersistingAsync()
-		{
-			if (authenticationStateTask is null)
-			{
-				throw new UnreachableException($"Authentication state not set in {nameof(OnPersistingAsync)}().");
-			}
-
-			var authenticationState = await authenticationStateTask;
-			var principal = authenticationState.User;
-
-			if (principal.Identity?.IsAuthenticated == true)
-			{
-                var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
-                var email = principal.FindFirst(_options.ClaimsIdentity.EmailClaimType)?.Value;
-
-                _logger.LogDebug("Persisting login for {user}", email);
+			_logger.LogDebug("Persisting login for {user}", email);
 				
-				if (userId != null && email != null)
+			if (userId != null && email != null)
+			{
+				_state.PersistAsJson(nameof(UserInfo), new UserInfo
 				{
-					_state.PersistAsJson(nameof(UserInfo), new UserInfo
-					{
-						UserId = userId,
-						Email = email,
-					});
-				}
+					UserId = userId,
+					Email = email,
+				});
 			}
 		}
+	}
 
-		protected override void Dispose(bool disposing)
-		{
-			subscription.Dispose();
-			AuthenticationStateChanged -= OnAuthenticationStateChanged;
-			base.Dispose(disposing);
-		}
+	protected override void Dispose(bool disposing)
+	{
+		subscription.Dispose();
+		AuthenticationStateChanged -= OnAuthenticationStateChanged;
+		base.Dispose(disposing);
 	}
 }

@@ -17,11 +17,16 @@ public abstract class ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase
 
 	protected async Task<T?> GetAsync<T>(string uri)
 	{
+		Logger.LogDebug("GET {Uri}", uri);
+
 		var response = await Client.GetAsync(uri);
 
 		try
 		{
 			response.EnsureSuccessStatusCode();
+
+			Logger.LogDebug("GET {Uri} successful", uri);
+
 			return await response.Content.ReadFromJsonAsync<T>();
 		}
 		catch (Exception exc)
